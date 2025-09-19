@@ -14,7 +14,9 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^6.16.2",
-    "express": "^5.1.0"
+    "@types/uuid": "^10.0.0",
+    "express": "^5.1.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
