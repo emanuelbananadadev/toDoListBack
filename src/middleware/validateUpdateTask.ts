@@ -1,22 +1,21 @@
 import {Request, Response, NextFunction} from "express"
+import { updateTaskSchema } from "../schemas/taskSchemas"
+import {ZodError} from "zod"
+import { AppError } from "../errors/AppError"
 
 export function validateUpdateTask(request: Request, response: Response, next: NextFunction) {
 
-    type DataUpdate = {
-        title?: string
-        completed?: boolean
+    try {
+        updateTaskSchema.parse(request.body)
+        next()
+        
+    } catch (error) {
+        if(error instanceof ZodError) {
+            throw new AppError(error.issues[0].message, 400)
+        }       
+        
+        throw new AppError("Erro inesperado na validação da task", 500)
     }
 
-    const {...data} = request.body as DataUpdate
-
-    if(data.title !== undefined && (data.title.trim() === "" || data.title.trim().length <= 3)) {
-        return response.status(400).json({message: "Título precisa ter mais de 3 caracteres"})
-    }
-
-    if(data.completed !== undefined && (typeof data.completed !== "boolean")) {
-        return response.status(400).json({message: "Completed precisa ser booleano"})
-    }
-
-    next()
 
 }

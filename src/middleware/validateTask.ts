@@ -1,18 +1,22 @@
 import {Request, Response, NextFunction} from "express"
+import { createTaskSchema } from "../schemas/taskSchemas"
+import {ZodError} from "zod"
+import { AppError } from "../errors/AppError"
 
 export function validateTask(request: Request, response: Response, next: NextFunction) {
-    type taskProps = {
-        title: string
-        completed?: boolean
+
+    try {
+        createTaskSchema.parse(request.body)
+
+        next()
+    } catch (error) {
+        if(error instanceof ZodError) {
+            throw new AppError(error.issues[0].message, 400)
+        }
+
+        throw new AppError("Erro inesperado ao criar uma task", 500)
     }
 
-    const {title} = request.body as taskProps
-    
-    if(title.trim() === "" || title.trim().length <= 3) {
-        return response.status(400).json({message: "Título precisa ter mais de 3 caracteres"})
-    }
-
-    next()
 
 }
 
