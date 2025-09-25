@@ -7,10 +7,10 @@ import { validateUpdateTask } from "../middleware/validateUpdateTask"
 const taskRouter = Router()
 const taskController = new TaskController()
 
-taskRouter.get('/task', taskController.list)
-taskRouter.post('/task', validateTask ,taskController.create)
-taskRouter.get('/task/:id', validateTaskId,taskController.find)
-taskRouter.delete('/task/:id', validateTaskId ,taskController.deleteTask)
-taskRouter.put('/task/:id', validateTaskId, validateUpdateTask, taskController.update)
+taskRouter.get('/', taskController.list)
+taskRouter.post('/', validateTask ,taskController.create)
+taskRouter.get('/:id', validateTaskId,taskController.find)
+taskRouter.delete('/:id', validateTaskId ,taskController.deleteTask)
+taskRouter.put('/:id', validateTaskId, validateUpdateTask, taskController.update)
 
 export {taskRouter}
