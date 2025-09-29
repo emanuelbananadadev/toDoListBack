@@ -6,6 +6,6 @@ const userRouter = Router()
 const userController = new UserController()
 
 userRouter.get('/', userController.list)
-userRouter.post('/', authMiddleware, userController.create)
+userRouter.post('/', userController.create)
 
 export {userRouter}
