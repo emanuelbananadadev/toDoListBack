@@ -16,13 +16,13 @@ export class TaskController {
         }
 
         const tasks = await prisma.task.findMany({
-            where: {userId: userId},
+            where: {userId},
             skip,
             take: limit,
             orderBy: {createdAt: "asc"}
             })
 
-        const total = await prisma.task.count({where: {userId: userId}})
+        const total = await prisma.task.count({where: {userId}})
 
         const totalPages = Math.ceil(total / limit)
 
@@ -52,10 +52,10 @@ export class TaskController {
         const userId = request.user?.id
 
         try {
-            const task = await prisma.task.findUnique({where: {id, userId: userId}})
+            const task = await prisma.task.findUnique({where: {id}})
 
-            if(!task) {
-                throw new AppError("Task não encontrada")
+            if(!task || task.userId != userId) {
+                throw new AppError("Task não encontrada ou não pertence a este usuário", 404)
             }
 
             return response.status(200).json({message: "Sua task",task})
@@ -72,7 +72,13 @@ export class TaskController {
 
         try {
 
-            const taskForDelete = await prisma.task.delete({where: {id, userId}})
+            const task = await prisma.task.findUnique({where: {id}})
+
+            if(!task || task.userId != userId) {
+                throw new AppError("Task não encontrada ou não pertence a este usuário", 404)
+            }
+
+            const taskForDelete = await prisma.task.delete({where: {id}})
 
              return response.status(200).json({ messsage: "Task deletada com sucesso", taskForDelete})
             
@@ -89,7 +95,13 @@ export class TaskController {
         const userId = request.user?.id
 
         try {
-            const taskForUpdate = await prisma.task.update({where: {id, userId}, data: data})
+            const task = await prisma.task.findUnique({where: {id}})
+
+            if(!task || task.userId != userId) {
+                throw new AppError("Task não encontrada ou não pertence a ese usuário", 404)
+            }
+
+            const taskForUpdate = await prisma.task.update({where: {id}, data: data})
 
             return response.status(200).json({message: "Task atualizada com sucesso", taskForUpdate})
             

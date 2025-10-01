@@ -3,6 +3,7 @@ declare module Express {
         user?: {
             id: string
             email: string
+            role?: UserRole
         }
     }
 }

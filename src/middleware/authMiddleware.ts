@@ -1,9 +1,11 @@
 import {Request, Response, NextFunction} from "express"
 import jwt from "jsonwebtoken"
+import { UserRole } from "../types/roles"
 
 interface JwtPayload {
     id: string
     email: string
+    role?: UserRole
 }
 
 export function authMiddleware(request: Request, response: Response, next: NextFunction) {
@@ -16,11 +18,12 @@ export function authMiddleware(request: Request, response: Response, next: NextF
     const [_, token] = authHeader?.split(" ")
 
     try {
-        const decoded = jwt.verify(token, "emanuelTeste") as JwtPayload
+        const decoded = jwt.verify(token, "emanuelTesteSecreta") as JwtPayload
 
         request.user = {
             id: decoded.id,
             email: decoded.email,
+            role: decoded.role
         }
 
         next()

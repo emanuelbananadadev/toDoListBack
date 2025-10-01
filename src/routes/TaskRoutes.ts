@@ -9,9 +9,9 @@ const taskRouter = Router()
 const taskController = new TaskController()
 
 taskRouter.get('/', authMiddleware ,taskController.list)
-taskRouter.post('/', validateTask ,taskController.create)
-taskRouter.get('/:id', validateTaskId,taskController.find)
-taskRouter.delete('/:id', validateTaskId ,taskController.deleteTask)
-taskRouter.put('/:id', validateTaskId, validateUpdateTask, taskController.update)
+taskRouter.post('/', authMiddleware ,validateTask ,taskController.create)
+taskRouter.get('/:id', authMiddleware ,validateTaskId,taskController.find)
+taskRouter.delete('/:id', authMiddleware ,validateTaskId ,taskController.deleteTask)
+taskRouter.put('/:id', authMiddleware ,validateTaskId, validateUpdateTask, taskController.update)
 
 export {taskRouter}

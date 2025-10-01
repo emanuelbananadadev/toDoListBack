@@ -1,18 +1,14 @@
 import {Request, Response} from 'express'
-import {z} from 'zod'
 import bcrypt from "bcrypt"
 import { prisma } from '../config/PrismaConfig'
 import jwt from "jsonwebtoken"
+import { loginSchema } from '../schemas/authSchemas'
 
 export class AuthController {
     
     async login(request: Request, response: Response) {
-        const bodySchema = z.object({
-            email: z.email(),
-            password: z.string()
-        })
 
-        const {email, password} = bodySchema.parse(request.body)
+        const {email, password} = loginSchema.parse(request.body)
 
         const user = await prisma.user.findUnique({where: { email }})
 
@@ -26,8 +22,8 @@ export class AuthController {
             return response.status(400).json("Senha incorreta")
         }
 
-        const token = jwt.sign({id: user.id, email: user.email}, "emanuelTeste", {expiresIn: "1d"})
+        const token = jwt.sign({id: user.id, email: user.email, role: user.role}, "emanuelTesteSecreta", {expiresIn: "1d"})
 
-        return response.json(token)
+        return response.json({token: token, user})
     }
 }
