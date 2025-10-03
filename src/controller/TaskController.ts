@@ -1,7 +1,6 @@
 import {prisma} from "../config/PrismaConfig"
 import { Request, Response, NextFunction } from "express"
 import { AppError } from "../errors/AppError"
-import id from "zod/v4/locales/id.js"
 
 export class TaskController {
     async list(request: Request, response: Response) {
@@ -80,7 +79,7 @@ export class TaskController {
 
             const taskForDelete = await prisma.task.delete({where: {id}})
 
-             return response.status(200).json({ messsage: "Task deletada com sucesso", taskForDelete})
+             return response.status(204).json({ messsage: "Task deletada com sucesso", taskForDelete})
             
         } catch (error) {
             next(error)
