@@ -22,8 +22,10 @@ export class AuthController {
             return response.status(400).json("Senha incorreta")
         }
 
+        const {password: _, ...userWithoutPassword} = user
+
         const token = jwt.sign({id: user.id, email: user.email, role: user.role}, "emanuelTesteSecreta", {expiresIn: "1d"})
 
-        return response.json({token: token, user})
+        return response.json({token: token, user: userWithoutPassword})
     }
 }
