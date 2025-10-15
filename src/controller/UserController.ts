@@ -4,6 +4,7 @@ import bcrypt from "bcrypt"
 import { prisma } from "../config/PrismaConfig"
 import { AppError } from "../errors/AppError"
 import { UserRole } from "../types/roles"
+import { changePasswordSchema } from "../schemas/userSchemas"
 
 export class UserController {
 
@@ -92,5 +93,41 @@ export class UserController {
         const users = await prisma.user.findMany()
 
         return response.status(200).json(users)
+    }
+
+    async changePassword(request: Request, response: Response, next: NextFunction) {
+        const userId = request.user?.id
+
+        if(!userId) {
+            throw new AppError("Usuário não autenticado", 401)
+        }
+
+        try {
+            const {currentPassword, newPassword} = changePasswordSchema.parse(request.body)
+            
+            const user = await prisma.user.findUnique({where: {id: userId}})
+
+            if(!user) {
+                throw new AppError("Usuário não encontrado", 401)
+            }
+
+            const isPasswordValid = await bcrypt.compare(currentPassword, user.password)
+
+            if(!isPasswordValid) {
+                throw new AppError("A senha atual está incorreta", 401)
+            }
+
+            const hashedPassword = await bcrypt.hash(newPassword, 10)
+
+            await prisma.user.update({
+                where: {id: userId},
+                data: {password: hashedPassword}
+            })
+
+            return response.status(204).send()
+
+        } catch (error) {
+            next(error)
+        }
     }
 }
