@@ -103,7 +103,7 @@ export class UserController {
         }
 
         try {
-            const {currentPassword, newPassword} = changePasswordSchema.parse(request.body)
+            const {currentPassword, newPassword, confirmNewPassword} = changePasswordSchema.parse(request.body)
             
             const user = await prisma.user.findUnique({where: {id: userId}})
 
