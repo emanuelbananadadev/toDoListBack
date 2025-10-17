@@ -81,30 +81,42 @@ Finalmente, inicie o servidor em modo de desenvolvimento.
 npm run dev
 ```
 
-O servidor estará rodando em `http://localhost:5000`.
+O servidor estará rodando em `http://localhost:3333`.
 
 -----
 
 ### **Endpoints da API**
 
-| Método | URL                   | Descrição                    |
-| ------ | --------------------- | ---------------------------- |
-| `POST` | `/tasks`              | Cria uma nova tarefa         |
-| `GET`  | `/tasks`              | Retorna todas as tarefas     |
-| `GET`  | `/tasks/:id`          | Retorna uma tarefa por ID    |
-| `PUT`  | `/tasks/:id`          | Atualiza uma tarefa          |
-| `DELETE`| `/tasks/:id`         | Deleta uma tarefa            |
+O prefixo **`[AUTH]`** indica que o endpoint exige o cabeçalho `Authorization: Bearer <token_jwt>`.
+
+| Módulo | Método | URL | Descrição | Segurança |
+| :---: | :---: | :---: | :---: | :---: |
+| **Autenticação** | `POST` | `/auth/login` | **Login**. Gera o JWT Token. | Público |
+| **Usuário** | `POST` | `/user` | **Registro**. Cria um novo usuário (role `USER` padrão). | Público |
+| **Perfil** | `GET` | `/user/profile` | **[AUTH]** Retorna dados do usuário logado (Nome, Email, Role). | Protegido |
+| **Senha** | `PATCH` | `/user/change-password` | **[AUTH]** Altera a senha. Exige `currentPassword` e `newPassword`. | Protegido |
+| **Tarefas** | `GET` | `/task` | **[AUTH]** Lista tarefas (paginadas e filtradas pelo `userId` logado). | Protegido |
+| **Tarefas** | `POST` | `/task` | **[AUTH]** Cria uma nova tarefa, vinculando-a ao usuário logado. | Protegido |
+| **Tarefas** | `PATCH` | `/task/:id` | **[AUTH]** Atualiza uma tarefa **(somente se pertencer ao usuário logado)**. | Protegido |
+| **Tarefas** | `DELETE` | `/task/:id` | **[AUTH]** Deleta uma tarefa **(somente se pertencer ao usuário logado)**. | Protegido |
+| **Admin** | `GET` | `/user` | **[AUTH/ADMIN]** Lista todos os usuários. | Admin |
+| **Admin** | `PATCH` | `/user/:id` | **[AUTH/ADMIN]** Altera o papel (`role`) de um usuário. | Admin |
 
 -----
 
-### **Tecnologias Utilizadas**
+### **Como Rodar o Projeto Frontend (Integração)**
 
-  - Node.js
-  - TypeScript
-  - Express
-  - Prisma ORM
-  - PostgreSQL
-  - Docker
+Com o Back-end rodando na porta **`3333`**, siga estes passos no diretório do seu projeto Front-end.
 
------
+**Pré-requisitos:** O repositório do Back-end deve estar ativo em `http://localhost:3333`.
+
+#### **Passo 1: Clonar e Instalar Dependências**
+
+```bash
+# Navegue para onde você deseja clonar o Front-end
+git clone [https://github.com/emanuelbananadadev/toDoListFront.git](https://github.com/emanuelbananadadev/toDoListFront.git)
+cd toDoListFront # Substitua pelo nome real do seu repositório Front-end
+npm install
+
+
 
