@@ -5,6 +5,8 @@ import { prisma } from "../config/PrismaConfig"
 import { AppError } from "../errors/AppError"
 import { UserRole } from "../types/roles"
 import { changePasswordSchema } from "../schemas/userSchemas"
+import { hash } from "bcrypt"
+import admin from "../firebaseAdmin"
 
 export class UserController {
 
@@ -31,6 +33,12 @@ export class UserController {
                 email,
                 password: hashedPassword,
             }
+        })
+
+        await admin.auth().createUser({
+            email,
+            password,
+            displayName: name,
         })
 
         return response.status(201).json(newUser)
@@ -128,6 +136,37 @@ export class UserController {
 
         } catch (error) {
             next(error)
+        }
+    }
+
+    async resetPassword(request: Request, response: Response) {
+        const bodySchema = z.object({
+            email: z.string().email(),
+            newPassword: z.string().min(6, {message: "A nova senha deve ter pelo menos 6 caracteres"})
+        })
+
+        const {email, newPassword} = bodySchema.parse(request.body)
+
+        try {
+            const user = await prisma.user.findUnique({where:{email}})
+
+            if(!user) {
+                return response.status(404).json({message: "Usuário não encontrado"})
+            }
+
+            const hashedPassword = await hash(newPassword, 10)
+
+            await prisma.user.update({
+                where: {email},
+                data: {password: hashedPassword}
+            })
+
+            return response.status(200).json({message: "Senha atualizada com sucesso!"})
+
+
+        } catch (error) {
+            console.log(error)
+            throw new AppError("Erro interno ao redefinir a senha")
         }
     }
 }
