@@ -12,6 +12,6 @@ userRouter.patch('/change-password', authMiddleware, userController.changePasswo
 userRouter.post('/', userController.create)
 userRouter.get('/profile', authMiddleware,userController.profile)
 userRouter.patch('/:id',authMiddleware ,adminMiddleware, validateTaskId ,userController.updateRole)
-userRouter.put("/reset-password", userController.resetPassword )
+//userRouter.put("/reset-password", userController.resetPassword )
 
 export {userRouter}
