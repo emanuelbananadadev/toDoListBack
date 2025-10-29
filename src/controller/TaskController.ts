@@ -1,6 +1,8 @@
 import {prisma} from "../config/PrismaConfig"
 import { Request, Response, NextFunction } from "express"
 import { AppError } from "../errors/AppError"
+import { createTaskSchema } from "../schemas/taskSchemas"
+import { ZodError } from "zod"
 
 export class TaskController {
     async list(request: Request, response: Response) {
@@ -28,22 +30,35 @@ export class TaskController {
         return response.status(200).json({message: "Lista paginada de tasks", page, totalPages, total, tasks, user: request.user})
     }
 
-    async create(request: Request, response: Response) {
-        const {title} = request.body
+    async create(request: Request, response: Response, next: NextFunction) {
         const userId = request.user?.id
 
         if(!userId) {
             throw new AppError("Usuário não autenticado ou token inválido", 401)
         }
 
-        const newTask = await prisma.task.create({
-            data: {
-                title,
-                userId: userId
-            }
-        })
+        try {
+            const taskData = createTaskSchema.parse(request.body)
 
-        return response.status(201).json({message: "Task criada com sucesso", newTask})
+            const newTask = await prisma.task.create({
+                data: {
+                    ...taskData,
+                    userId: userId,
+                }
+            })
+
+            return response.status(201).json({message: "Tarefa criada com sucesso", newTask})
+            
+        } catch (error) {
+            if(error instanceof ZodError) {
+                return response.status(400).json({
+                    message: "Dados inválidos na requisição"
+                })
+            }
+
+            next(error)
+        }
+
     }
 
     async find(request: Request, response: Response, next: NextFunction) {
@@ -51,9 +66,9 @@ export class TaskController {
         const userId = request.user?.id
 
         try {
-            const task = await prisma.task.findUnique({where: {id}})
+            const task = await prisma.task.findUnique({where: {id, userId: userId}})
 
-            if(!task || task.userId != userId) {
+            if(!task) {
                 throw new AppError("Task não encontrada ou não pertence a este usuário", 404)
             }
 

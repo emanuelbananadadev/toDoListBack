@@ -13,11 +13,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum TaskType {
+  TRABALHO
+  PROVA
+  REUNIAO
+  APRESENTACAO
+}
+
 model Task {
   id String @id @default(uuid())
   title String 
   completed Boolean @default(false)
   createdAt DateTime @default(now())
+
+  notes String?
+  type TaskType @default(TRABALHO)
+  icon String 
+  color String
+
+  hasReminder Boolean @default(false)
+  reminderTime String?
+
+  dueDate DateTime
 
   userId String
   user User @relation(fields: [userId], references: [id])
