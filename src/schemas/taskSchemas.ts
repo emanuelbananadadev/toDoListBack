@@ -11,7 +11,7 @@ export const createTaskSchema = z.object({
     dueDate: z.string().regex(dataRegex, {message: "Formato da data deve ser YYYY-MM-DD"}),
     type: TasktypeEnum,
     icon: z.string().min(1, {message: "O ícone da tarefa é obrigatório"}),
-    color: z.string().min(4, {message: "A cor é obrigatória"}),
+    notes: z.string().optional().nullable(),
 
     hasReminder: z.boolean().optional(),
     reminderTime: z.string().optional().nullable(),

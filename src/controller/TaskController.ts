@@ -1,10 +1,20 @@
 import {prisma} from "../config/PrismaConfig"
 import { Request, Response, NextFunction } from "express"
 import { AppError } from "../errors/AppError"
-import { createTaskSchema } from "../schemas/taskSchemas"
+import { createTaskSchema, idSchema, updateTaskSchema } from "../schemas/taskSchemas"
 import { ZodError } from "zod"
 
+const typeColorMap: Record<string, string> = {
+    TRABALHO: "#2980b9",
+    PROVA: "#c0392b",
+    REUNIAO: "#27ae60",
+    APRESENTACAO: "#8e44ad"
+};
+
+
 export class TaskController {
+
+
     async list(request: Request, response: Response) {
         const page = Number(request.query.page) || 1
         const limit = Number(request.query.limit) || 10
@@ -43,6 +53,8 @@ export class TaskController {
             const newTask = await prisma.task.create({
                 data: {
                     ...taskData,
+                    color: typeColorMap[taskData.type],
+                    dueDate: new Date(taskData.dueDate),
                     userId: userId,
                 }
             })
@@ -62,10 +74,12 @@ export class TaskController {
     }
 
     async find(request: Request, response: Response, next: NextFunction) {
-        const {id} = request.params
-        const userId = request.user?.id
+      
 
         try {
+            const {id} = idSchema.parse(request.params)
+            const userId = request.user?.id
+
             const task = await prisma.task.findUnique({where: {id, userId: userId}})
 
             if(!task) {
@@ -81,10 +95,11 @@ export class TaskController {
     }
 
     async deleteTask(request: Request, response: Response, next: NextFunction) {
-        const {id} = request.params
-        const userId = request.user?.id
 
         try {
+
+            const {id} = idSchema.parse(request.params)
+            const userId = request.user?.id
 
             const task = await prisma.task.findUnique({where: {id}})
 
@@ -103,23 +118,41 @@ export class TaskController {
 
     async update(request: Request, response: Response, next: NextFunction) {
 
-        const {id} = request.params
+        
+        try {         
+            delete request.body.color
+            const {id} = idSchema.parse(request.params)
+            const userId = request.user?.id
 
-        const {...data} = request.body 
-        const userId = request.user?.id
+            const validateData = updateTaskSchema.parse(request.body)
 
-        try {
-            const task = await prisma.task.findUnique({where: {id}})
-
-            if(!task || task.userId != userId) {
-                throw new AppError("Task não encontrada ou não pertence a ese usuário", 404)
+            if(Object.keys(validateData).length === 0) {
+                throw new AppError("Nenhum dado válido fornecido para atualização", 400)
             }
 
-            const taskForUpdate = await prisma.task.update({where: {id}, data: data})
+            if (validateData.type) {
+                (validateData as any).color = typeColorMap[validateData.type];
+            }
+
+            const taskForUpdate = await prisma.task.update({
+                where: {
+                    id,
+                    userId: userId
+                },
+                data: validateData
+            })
 
             return response.status(200).json({message: "Task atualizada com sucesso", taskForUpdate})
             
         } catch (error) {
+
+            if(error instanceof ZodError) {
+                return response.status(400).json({
+                    message: "Dados inválidos na requisição",
+                    errors: error.issues[0]
+                })
+            }
+            
             next(error)
             
         }
