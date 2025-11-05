@@ -5,10 +5,10 @@ import { createTaskSchema, idSchema, updateTaskSchema } from "../schemas/taskSch
 import { ZodError } from "zod"
 
 const typeColorMap: Record<string, string> = {
-    TRABALHO: "#2980b9",
-    PROVA: "#c0392b",
-    REUNIAO: "#27ae60",
-    APRESENTACAO: "#8e44ad"
+    TRABALHO: "#f97316,
+    PROVA: "#ef4444",
+    REUNIAO: "#3b82f6",
+    APRESENTACAO: "#1e3a8a"
 };
 
 
