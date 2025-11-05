@@ -1,10 +1,10 @@
 import {NextFunction, Request, Response} from "express"
-import {z} from 'zod'
+import {z, ZodError} from 'zod'
 import bcrypt from "bcrypt"
 import { prisma } from "../config/PrismaConfig"
 import { AppError } from "../errors/AppError"
 import { UserRole } from "../types/roles"
-import { changePasswordSchema } from "../schemas/userSchemas"
+import { changePasswordSchema, updateProfileSchema } from "../schemas/userSchemas"
 import { hash } from "bcrypt"
 
 export class UserController {
@@ -128,6 +128,52 @@ export class UserController {
             return response.status(204).send()
 
         } catch (error) {
+            next(error)
+        }
+    }
+
+    async updateProfile(request: Request, response: Response, next: NextFunction) {
+        const userId = request.user?.id
+
+        if(!userId) {
+            throw new AppError("Usuário não autenticado", 401)
+        }
+
+        try {
+            const validateData = updateProfileSchema.parse(request.body)
+
+            if(validateData.birthDate) {
+                (validateData as any).birthDate = new Date(validateData.birthDate)
+            }
+
+            const updatedUser = await prisma.user.update({
+                where: {id: userId},
+                data: validateData,
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    phone: true,
+                    course: true,
+                    birthDate: true,
+                    avatarUrl: true
+                }
+            })
+
+            return response.status(200).json(updatedUser)
+
+
+        } catch (error) {
+            if(error instanceof ZodError) {
+                return response.status(400).json({
+                    message: "Dados inválidos",
+                    errors: error.issues.map(i=>i.message)
+                })
+            }
+
             next(error)
         }
     }

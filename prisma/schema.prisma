@@ -57,6 +57,11 @@ model User {
   resetToken String? @unique 
   resetTokenExpiresAt DateTime?
 
+  phone String?
+  course String?
+  birthDate DateTime?
+  avatarUrl String?
+
   tasks Task[]
 }
 

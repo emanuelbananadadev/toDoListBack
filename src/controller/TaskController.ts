@@ -101,13 +101,13 @@ export class TaskController {
             const {id} = idSchema.parse(request.params)
             const userId = request.user?.id
 
-            const task = await prisma.task.findUnique({where: {id}})
+            // const task = await prisma.task.findUnique({where: {id}})
 
-            if(!task || task.userId != userId) {
-                throw new AppError("Task não encontrada ou não pertence a este usuário", 404)
-            }
+            // if(!task || task.userId != userId) {
+            //     throw new AppError("Task não encontrada ou não pertence a este usuário", 404)
+            // }
 
-            const taskForDelete = await prisma.task.delete({where: {id}})
+            const taskForDelete = await prisma.task.delete({where: {id, userId: userId}})
 
              return response.status(204).json({ messsage: "Task deletada com sucesso", taskForDelete})
             
